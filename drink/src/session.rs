@@ -5,6 +5,7 @@ use std::{fmt::Debug, mem, rc::Rc};
 pub use contract_transcode;
 use contract_transcode::ContractMessageTranscoder;
 use frame_support::weights::Weight;
+use pallet_contracts::Determinism;
 use pallet_contracts_primitives::{ContractExecResult, ContractInstantiateResult};
 use parity_scale_codec::Decode;
 
@@ -121,6 +122,7 @@ pub struct Session<R: Runtime> {
 
     actor: AccountIdFor<R>,
     gas_limit: Weight,
+    determinism: Determinism,
 
     transcoders: TranscoderRegistry<AccountIdFor<R>>,
 
@@ -137,6 +139,7 @@ impl<R: Runtime> Session<R> {
             sandbox: Sandbox::new().map_err(SessionError::Drink)?,
             actor: R::default_actor(),
             gas_limit: DEFAULT_GAS_LIMIT,
+            determinism: Determinism::Enforced,
             transcoders: TranscoderRegistry::new(),
             deploy_results: vec![],
             deploy_returns: vec![],
@@ -163,6 +166,19 @@ impl<R: Runtime> Session<R> {
     /// Sets a new gas limit and returns the old one.
     pub fn set_gas_limit(&mut self, gas_limit: Weight) -> Weight {
         mem::replace(&mut self.gas_limit, gas_limit)
+    }
+
+    /// Sets a new determinism policy and returns updated `self`.
+    pub fn with_determinism(self, determinism: Determinism) -> Self {
+        Self {
+            determinism,
+            ..self
+        }
+    }
+
+    /// Sets a new determinism policy and returns the old one.
+    pub fn set_determinism(&mut self, determinism: Determinism) -> Determinism {
+        mem::replace(&mut self.determinism, determinism)
     }
 
     /// Register a transcoder for a particular contract and returns updated `self`.
@@ -312,6 +328,7 @@ impl<R: Runtime> Session<R> {
             contract_bytes,
             self.actor.clone(),
             DEFAULT_STORAGE_DEPOSIT_LIMIT,
+            self.determinism,
         );
 
         result
@@ -416,6 +433,7 @@ impl<R: Runtime> Session<R> {
             self.actor.clone(),
             self.gas_limit,
             DEFAULT_STORAGE_DEPOSIT_LIMIT,
+            self.determinism,
         );
 
         let ret = match &result.result {
