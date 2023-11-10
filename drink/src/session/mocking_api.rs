@@ -6,31 +6,29 @@ use crate::{
     DEFAULT_GAS_LIMIT,
 };
 
-pub struct MockingApi<'a, R: RuntimeWithContracts> {
-    session: &'a mut Session<R>,
+/// Interface for basic mocking operations.
+pub trait MockingApi<R: RuntimeWithContracts> {
+    /// Deploy `mock` as a standard contract. Returns the address of the deployed contract.
+    fn deploy(&mut self, mock: ContractMock) -> AccountIdFor<R>;
+
+    /// Mock part of an existing contract. In particular, allows to override real behavior of
+    /// deployed contract's messages.
+    fn mock_existing_contract(&mut self, _mock: ContractMock, _address: AccountIdFor<R>);
 }
 
-impl<'a, R: RuntimeWithContracts> MockingApi<'a, R> {
-    /// Create a new MockingApi
-    pub fn new(session: &'a mut Session<R>) -> Self {
-        MockingApi { session }
-    }
-
-    /// Deploy `mock` as a standard contract. Returns the address of the deployed contract.
-    pub fn deploy(&mut self, mock: ContractMock) -> AccountIdFor<R> {
+impl<R: RuntimeWithContracts> MockingApi<R> for Session<R> {
+    fn deploy(&mut self, mock: ContractMock) -> AccountIdFor<R> {
         // We have to deploy some contract. We use a dummy contract for that. Thanks to that, we
         // ensure that the pallet will treat our mock just as a regular contract, until we actually
         // call it.
         let mock_bytes = wat::parse_str(DUMMY_CONTRACT).expect("Dummy contract should be valid");
         let salt = self
-            .session
             .mocks
             .lock()
             .expect("Should be able to acquire lock on registry")
             .salt();
 
         let mock_address = self
-            .session
             .sandbox()
             .deploy_contract(
                 mock_bytes,
@@ -45,8 +43,7 @@ impl<'a, R: RuntimeWithContracts> MockingApi<'a, R> {
             .expect("Deployment of a dummy contract should succeed")
             .account_id;
 
-        self.session
-            .mocks
+        self.mocks
             .lock()
             .expect("Should be able to acquire lock on registry")
             .register(mock_address.clone(), mock);
@@ -54,9 +51,7 @@ impl<'a, R: RuntimeWithContracts> MockingApi<'a, R> {
         mock_address
     }
 
-    /// Mock part of an existing contract. In particular, allows to override real behavior of
-    /// deployed contract's messages.
-    pub fn mock_existing_contract(&mut self, _mock: ContractMock, _address: AccountIdFor<R>) {
+    fn mock_existing_contract(&mut self, _mock: ContractMock, _address: AccountIdFor<R>) {
         todo!("soon")
     }
 }

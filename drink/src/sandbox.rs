@@ -47,7 +47,7 @@ impl<R: frame_system::Config> Sandbox<R> {
         result
     }
 
-    /// Registers an extension
+    /// Registers an extension.
     pub fn register_extension<E: Any + Extension>(&mut self, ext: E) {
         self.externalities.register_extension(ext);
     }

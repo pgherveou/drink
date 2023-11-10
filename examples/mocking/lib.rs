@@ -42,7 +42,7 @@ mod tests {
     use drink::{
         mock_message,
         runtime::MinimalRuntime,
-        session::{Session, NO_ARGS},
+        session::{mocking_api::MockingApi, Session, NO_ARGS},
         ContractMock,
     };
 

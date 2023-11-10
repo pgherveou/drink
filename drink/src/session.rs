@@ -23,7 +23,7 @@ use crate::{
 };
 
 pub mod error;
-mod mocking_api;
+pub mod mocking_api;
 mod transcoding;
 
 use error::SessionError;
@@ -203,8 +203,8 @@ impl<R: RuntimeWithContracts> Session<R> {
     }
 
     /// Returns a reference for mocking API.
-    pub fn mocking_api(&mut self) -> MockingApi<R> {
-        MockingApi::new(self)
+    pub fn mocking_api(&mut self) -> &mut impl MockingApi<R> {
+        self
     }
 
     /// Deploys a contract with a given constructor, arguments, salt and endowment. In case of
