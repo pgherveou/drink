@@ -2,7 +2,6 @@
 
 pub mod balance_api;
 pub mod contract_api;
-// pub mod mocking_api;
 pub mod runtime_api;
 pub mod system_api;
 pub mod timestamp_api;
