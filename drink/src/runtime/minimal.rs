@@ -139,7 +139,6 @@ mod construct_runtime {
         type FreezeIdentifier = ();
         type MaxLocks = ();
         type MaxReserves = ();
-        type MaxHolds = ConstU32<1>;
         type MaxFreezes = ();
         type RuntimeHoldReason = RuntimeHoldReason;
         type RuntimeFreezeReason = RuntimeFreezeReason;
